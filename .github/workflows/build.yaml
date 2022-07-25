@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       nextcloud-version: ${{ steps.nc-tag.outputs.nc-version }}
-      nextcloud-ocr-version: ${{ steps.nc-ocr-tag.outputs.nc-ocr-version }}
+      nextcloud-ocrmypdf-version: ${{ steps.nc-ocrmypdf-tag.outputs.nc-ocrmypdf-version }}
     steps:
       - name: Get Latest Nextcloud Tag
         id: nc-tag
@@ -13,17 +13,17 @@ jobs:
           apt update && apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v1/repositories/nextcloud/tags | jq '.[].name' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
           echo "::set-output name=nc-version::${VERSION}"
-      - name: Get Latest Nextcloud-OCR Tag
-        id: nc-ocr-tag
+      - name: Get Latest nextcloud-ocrmypdf Tag
+        id: nc-ocrmypdf-tag
         run: |
           apt update && apt install jq curl -y
-          VERSION=$(curl https://registry.hub.docker.com/v1/repositories/mjdazz/actions-test/tags | jq '.[].name' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
-          echo "::set-output name=nc-ocr-version::${VERSION}"
+          VERSION=$(curl https://registry.hub.docker.com/v1/repositories/mjdazz/nextcloud-ocrmypdf/tags | jq '.[].name' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
+          echo "::set-output name=nc-ocrmypdf-version::${VERSION}"
 
   build-images:
     runs-on: ubuntu-latest
     needs: get-latest-tag
-    if: needs.get-latest-tag.outputs.nextcloud-version != needs.get-latest-tag.outputs.nextcloud-ocr-version
+    if: needs.get-latest-tag.outputs.nextcloud-version != needs.get-latest-tag.outputs.nextcloud-ocrmypdf-version
     strategy:
       matrix:
         version: ["${{ needs.get-latest-tag.outputs.nextcloud-version }}",
@@ -44,6 +44,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: mjdazz/action-test:${{ matrix.version }}
+          tags: mjdazz/nextcloud-ocrmypdf:${{ matrix.version }}
           build-args: |
             VERSION=${{ matrix.version }}
