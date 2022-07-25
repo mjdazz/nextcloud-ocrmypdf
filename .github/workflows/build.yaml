@@ -1,5 +1,7 @@
 name: build-docker-image
-on: [push]
+on:
+  schedule:
+    - cron: "0 2 * * *"
 jobs:
   get-latest-tag:
     runs-on: ubuntu-latest
