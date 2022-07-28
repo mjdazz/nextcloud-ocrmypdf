@@ -30,7 +30,8 @@ jobs:
       matrix:
         version: ["${{ needs.get-latest-tag.outputs.nextcloud-version }}",
                   "${{ needs.get-latest-tag.outputs.nextcloud-version }}-apache",
-                  "${{ needs.get-latest-tag.outputs.nextcloud-version }}-fpm"
+                  "${{ needs.get-latest-tag.outputs.nextcloud-version }}-fpm",
+                  "latest"
                   ]
     steps:
       - uses: actions/checkout@v2
