@@ -15,3 +15,16 @@ For a quick test, just run `docker run -p 8080:80 --rm mjdazz/nextcloud-ocrmypdf
 ### Docker Compose
 
 If you're running docker compose, remember to replace the image of the container running the cron task!
+
+### Kubernetes
+
+If you're running Nextcloud on K8s with the [official Helm Chart](https://github.com/nextcloud/helm/tree/master/charts/nextcloud), you only need to replace the image of the app, not of the cron job, as it uses WebCron:
+
+```yaml
+image:
+  repository: mjdazz/nextcloud-ocrmypdf
+  flavor: apache
+  # If unset, uses flavor + .Chart.AppVersion to create tag
+  tag: 24.0.3
+  pullPolicy: IfNotPresent
+```
