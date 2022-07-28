@@ -31,7 +31,27 @@ jobs:
         version: ["${{ needs.get-latest-tag.outputs.nextcloud-version }}",
                   "${{ needs.get-latest-tag.outputs.nextcloud-version }}-apache",
                   "${{ needs.get-latest-tag.outputs.nextcloud-version }}-fpm",
-                  "latest"
+                  "latest",
+                  "apache",
+                  "beta",
+                  "beta-apache",
+                  "beta-fpm",
+                  "beta-fpm-alpine",
+                  "fpm",
+                  "fpm-alpine",
+                  "latest",
+                  "production",
+                  "production-apache",
+                  "production-fpm",
+                  "production-fpm-alpine",
+                  "rc",
+                  "rc-apache",
+                  "rc-fpm",
+                  "rc-fpm-alpine",
+                  "stable",
+                  "stable-apache",
+                  "stable-fpm",
+                  "stable-fpm-alpine",
                   ]
     steps:
       - uses: actions/checkout@v2
