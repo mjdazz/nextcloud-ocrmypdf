@@ -10,7 +10,7 @@ jobs:
       - name: Get Latest Nextcloud Tag
         id: nc-tag
         run: |
-          apt update && apt install jq curl -y
+          sudo apt update && sudo apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v1/repositories/nextcloud/tags | jq '.[].name' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
           echo "::set-output name=nc-version::${VERSION}"
 
