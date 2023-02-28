@@ -14,12 +14,14 @@ jobs:
         run: |
           sudo apt update && sudo apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v2/repositories/library/nextcloud/tags\?page_size\=1024 | jq '."results"[]["name"]' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
+          echo "Latest version is ${VERSION}"
           echo "nc-version=${VERSION}" >> $GITHUB_OUTPUT
       - name: Get Latest nextcloud-ocrmypdf Tag
         id: nc-ocrmypdf-tag
         run: |
           sudo apt update && sudo apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v2/repositories/mjdazz/nextcloud-ocrmypdf/tags\?page_size\=1024 | jq '."results"[]["name"]' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
+          echo "Latest version is ${VERSION}"
           echo "nc-ocrmypdf-version=${VERSION}" >> $GITHUB_OUTPUT
 
   build-images:
