@@ -1,4 +1,4 @@
-name: build-docker-image-daily
+name: build-daily
 on:
   schedule:
     - cron: "0 2 * * *"
@@ -6,18 +6,42 @@ jobs:
   get-latest-tag:
     runs-on: ubuntu-latest
     outputs:
-      nextcloud-version: ${{ steps.nc-tag.outputs.nc-version }}
-      nextcloud-ocrmypdf-version: ${{ steps.nc-ocrmypdf-tag.outputs.nc-ocrmypdf-version }}
+      nextcloud-versions: ${{ steps.nc-last-30-tags.outputs.nc-versions }}
+      nextcloud-latest-version: ${{ steps.nc-latest-tag.outputs.nc-version }}
+      nextcloud-latest-ocrmypdf-version: ${{ steps.nc-latest-ocrmypdf-tag.outputs.nc-ocrmypdf-version }}
     steps:
+      - name: Get Last 30 Nextcloud Tags
+        id: nc-last-30-tags
+        run: |
+          sudo apt update && sudo apt install jq curl -y
+          for i in $(curl https://registry.hub.docker.com/v2/repositories/library/nextcloud/tags\?page_size\=1024 | jq '."results"[]["name"]' --raw-output | grep -v alpine |  sort --version-sort | tail -n 30); do
+              VERSIONS=("${VERSIONS[@]}" "$i")
+          done
+
+          JSON="["
+          for version in ${VERSIONS[@]}; do
+              JSONline="\"$version\","
+              if [[ "$JSON" != *"$JSONline"* ]]; then
+                  JSON="$JSON$JSONline"
+              fi
+          done
+
+          if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+          fi
+          JSON="$JSON]"
+
+          echo "Latest version is ${VERSIONS[-1]}"
+          echo "nc-versions=${JSON}" >> $GITHUB_OUTPUT
       - name: Get Latest Nextcloud Tag
-        id: nc-tag
+        id: nc-latest-tag
         run: |
           sudo apt update && sudo apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v2/repositories/library/nextcloud/tags\?page_size\=1024 | jq '."results"[]["name"]' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
           echo "Latest version is ${VERSION}"
           echo "nc-version=${VERSION}" >> $GITHUB_OUTPUT
       - name: Get Latest nextcloud-ocrmypdf Tag
-        id: nc-ocrmypdf-tag
+        id: nc-latest-ocrmypdf-tag
         run: |
           sudo apt update && sudo apt install jq curl -y
           VERSION=$(curl https://registry.hub.docker.com/v2/repositories/mjdazz/nextcloud-ocrmypdf/tags\?page_size\=1024 | jq '."results"[]["name"]' --raw-output | egrep "^[0-9]+\.[0-9]+\.[0-9]+$" |  sort --version-sort | tail -n 1)
@@ -27,22 +51,10 @@ jobs:
   build-images:
     runs-on: ubuntu-latest
     needs: get-latest-tag
-    if: needs.get-latest-tag.outputs.nextcloud-version != needs.get-latest-tag.outputs.nextcloud-ocrmypdf-version
+    if: needs.get-latest-tag.outputs.nextcloud-latest-version != needs.get-latest-tag.outputs.nextcloud-latest-ocrmypdf-version
     strategy:
       matrix:
-        version: ["${{ needs.get-latest-tag.outputs.nextcloud-version }}",
-                  "${{ needs.get-latest-tag.outputs.nextcloud-version }}-apache",
-                  "${{ needs.get-latest-tag.outputs.nextcloud-version }}-fpm",
-                  "latest",
-                  "apache",
-                  "fpm",
-                  "latest",
-                  "production",
-                  "production-apache",
-                  "production-fpm",
-                  "stable-apache",
-                  "stable-fpm",
-                  ]
+        version: ["${{ fromJSON(needs.get-latest-tag.outputs.nextcloud-versions) }}"]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Docker Hub
