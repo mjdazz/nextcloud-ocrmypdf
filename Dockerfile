@@ -14,3 +14,5 @@ RUN apt-get update &&\
         tesseract-ocr-est &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
+
+RUN echo memory_limit=1024M > /usr/local/etc/php/conf.d/memory-limit.ini
